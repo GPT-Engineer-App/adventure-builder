@@ -18,31 +18,41 @@ const initialScenario = {
 
 const Index = () => {
   const [mode, setMode] = useState("player");
-  const [scenario, setScenario] = useState(initialScenario);
-  const [currentScenario, setCurrentScenario] = useState(scenario);
+  const [scenarios, setScenarios] = useState([initialScenario]);
+  const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const [editingScenario, setEditingScenario] = useState(initialScenario);
 
-  const handleChoice = (choice) => {
-    if (currentScenario[choice].next) {
-      setCurrentScenario(currentScenario[choice].next);
+  const handleChoice = (choice, index) => {
+    if (scenarios[index][choice].next !== null) {
+      setCurrentScenarioIndex(scenarios[index][choice].next);
     } else {
       alert("End of this path. Please create more scenarios.");
     }
   };
 
   const handleEditChange = (path, field, value) => {
-    setEditingScenario((prev) => ({
-      ...prev,
-      [path]: {
-        ...prev[path],
-        [field]: value,
-      },
-    }));
+    if (path === "text") {
+      setEditingScenario((prev) => ({
+        ...prev,
+        text: value,
+      }));
+    } else {
+      setEditingScenario((prev) => ({
+        ...prev,
+        [path]: {
+          ...prev[path],
+          [field]: value,
+        },
+      }));
+    }
   };
 
   const saveScenario = () => {
-    setScenario(editingScenario);
-    setCurrentScenario(editingScenario);
+    setScenarios((prev) => {
+      const newScenarios = [...prev];
+      newScenarios[currentScenarioIndex] = editingScenario;
+      return newScenarios;
+    });
     setMode("player");
   };
 
@@ -53,15 +63,15 @@ const Index = () => {
       </Button>
       {mode === "player" ? (
         <VStack spacing={4}>
-          <Text fontSize="2xl">{currentScenario.text}</Text>
+          <Text fontSize="2xl">{scenarios[currentScenarioIndex].text}</Text>
           <Flex>
-            <Box onClick={() => handleChoice("left")} cursor="pointer">
-              <Image src={currentScenario.left.img} alt="Left Path" />
-              <Text>{currentScenario.left.text}</Text>
+            <Box onClick={() => handleChoice("left", currentScenarioIndex)} cursor="pointer">
+              <Image src={scenarios[currentScenarioIndex].left.img} alt="Left Path" />
+              <Text>{scenarios[currentScenarioIndex].left.text}</Text>
             </Box>
-            <Box onClick={() => handleChoice("right")} cursor="pointer">
-              <Image src={currentScenario.right.img} alt="Right Path" />
-              <Text>{currentScenario.right.text}</Text>
+            <Box onClick={() => handleChoice("right", currentScenarioIndex)} cursor="pointer">
+              <Image src={scenarios[currentScenarioIndex].right.img} alt="Right Path" />
+              <Text>{scenarios[currentScenarioIndex].right.text}</Text>
             </Box>
           </Flex>
         </VStack>
@@ -72,11 +82,11 @@ const Index = () => {
           <Flex>
             <VStack>
               <Input value={editingScenario.left.text} onChange={(e) => handleEditChange("left", "text", e.target.value)} placeholder="Left choice text" />
-              <Input value={editingScenario.left.img} onChange={(e) => handleEditChange("left", "img", e.target.value)} placeholder="Left choice image URL" />
+              <Input type="file" onChange={(e) => handleEditChange("left", "img", URL.createObjectURL(e.target.files[0]))} placeholder="Left choice image URL" />
             </VStack>
             <VStack>
               <Input value={editingScenario.right.text} onChange={(e) => handleEditChange("right", "text", e.target.value)} placeholder="Right choice text" />
-              <Input value={editingScenario.right.img} onChange={(e) => handleEditChange("right", "img", e.target.value)} placeholder="Right choice image URL" />
+              <Input type="file" onChange={(e) => handleEditChange("right", "img", URL.createObjectURL(e.target.files[0]))} placeholder="Right choice image URL" />
             </VStack>
           </Flex>
           <Button onClick={saveScenario}>Save Scenario</Button>
