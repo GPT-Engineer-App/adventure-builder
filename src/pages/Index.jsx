@@ -23,8 +23,9 @@ const Index = () => {
   const [editingScenario, setEditingScenario] = useState(initialScenario);
 
   const handleChoice = (choice, index) => {
-    if (scenarios[index][choice].next !== null) {
-      setCurrentScenarioIndex(scenarios[index][choice].next);
+    const nextIndex = scenarios[index][choice].next;
+    if (nextIndex !== null && nextIndex < scenarios.length) {
+      setCurrentScenarioIndex(nextIndex);
     } else {
       alert("End of this path. Please create more scenarios.");
     }
@@ -51,6 +52,14 @@ const Index = () => {
     setScenarios((prev) => {
       const newScenarios = [...prev];
       newScenarios[currentScenarioIndex] = editingScenario;
+      if (editingScenario.left.next === null) {
+        newScenarios.push({ text: "", left: { text: "", img: "", next: null }, right: { text: "", img: "", next: null } });
+        newScenarios[currentScenarioIndex].left.next = newScenarios.length - 1;
+      }
+      if (editingScenario.right.next === null) {
+        newScenarios.push({ text: "", left: { text: "", img: "", next: null }, right: { text: "", img: "", next: null } });
+        newScenarios[currentScenarioIndex].right.next = newScenarios.length - 1;
+      }
       return newScenarios;
     });
     setMode("player");
